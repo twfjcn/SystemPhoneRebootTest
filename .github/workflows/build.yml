@@ -20,13 +20,10 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
-      # 官方Gradle Action，自动处理wrapper、权限、构建
-      - name: Build with Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          arguments: assembleRelease
+      # 直接使用系统全局 gradle 编译，不需要项目里的 gradlew
+      - name: Build Release APK
+        run: gradle assembleRelease
 
       - name: Upload built APK
         uses: actions/upload-artifact@v4
