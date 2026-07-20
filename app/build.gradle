@@ -1,19 +1,21 @@
 plugins {
     id 'com.android.application'
 }
+
 android {
     namespace "com.autostart"
     compileSdk 34
-    // 新增这一行
-    suppressUnsupportedCompileSdk=34
+
     defaultConfig {
         applicationId "com.autostart"
         minSdk 21
         targetSdk 34
         versionCode 1
         versionName "1.0"
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -25,6 +27,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
+
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
