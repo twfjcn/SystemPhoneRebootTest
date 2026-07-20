@@ -17,17 +17,14 @@ jobs:
           distribution: "temurin"
           cache: gradle
 
-      # 自动生成完整 Gradle Wrapper
       - name: Generate Gradle wrapper
         run: |
           gradle wrapper --gradle-version 8.1
           chmod +x gradlew
 
-      # 编译 Release APK
       - name: Build Release APK
         run: ./gradlew assembleRelease
 
-      # 上传APK
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
