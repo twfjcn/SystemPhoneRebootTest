@@ -21,7 +21,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 直接使用系统全局 gradle 编译，不需要项目里的 gradlew
+      # 安装指定版本 Gradle 8.1
+      - name: Install Gradle 8.1
+        run: |
+          wget https://services.gradle.org/distributions/gradle-8.1-bin.zip
+          unzip gradle-8.1-bin.zip
+          echo "$PWD/gradle-8.1/bin" >> $GITHUB_PATH
+
+      # 使用8.1版本gradle编译
       - name: Build Release APK
         run: gradle assembleRelease
 
