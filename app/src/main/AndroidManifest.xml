@@ -7,20 +7,12 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@android:drawable/ic_menu_call"
-        android:label="开机自启工具"
-        android:roundIcon="@android:drawable/ic_menu_call"
+        android:label="开机自启服务"
         android:supportsRtl="true"
         android:theme="@style/Theme.MaterialComponents.Light.NoActionBar">
 
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+        <!-- 移除桌面启动入口，无图标 -->
+        <activity android:name=".MainActivity" />
 
         <receiver
             android:name=".BootReceiver"
