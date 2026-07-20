@@ -22,13 +22,11 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Generate Gradle Wrapper
-        run: |
-          gradle wrapper --gradle-version 8.1
-          chmod +x gradlew
-
-      - name: Compile Release APK
-        run: ./gradlew assembleRelease
+      # 官方Gradle Action，自动处理wrapper、权限、构建
+      - name: Build with Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          arguments: assembleRelease
 
       - name: Upload built APK
         uses: actions/upload-artifact@v4
