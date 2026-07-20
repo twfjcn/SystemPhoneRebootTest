@@ -4,6 +4,8 @@ plugins {
 android {
     namespace "com.autostart"
     compileSdk 34
+    // 新增这一行
+    suppressUnsupportedCompileSdk=34
     defaultConfig {
         applicationId "com.autostart"
         minSdk 21
