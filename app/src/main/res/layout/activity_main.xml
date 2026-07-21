@@ -8,22 +8,23 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="开机自启程序"
+        android:text="欢迎使用安卓系统"
         android:textSize="22sp"
         android:textStyle="bold"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="目标包名：com.oversea.aslauncher"/>
+        android:text="安卓系统由‌谷歌（Google）主导开发"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="启动页面：MainActivity"/>
+        android:text="基于 Linux 内核的开源移动操作系统"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:text="使用须知：\n1. 打开悬浮窗权限\n2. 开启应用自启动\n3. 电池后台设为无限制\n4. 设备已安装目标App\n5. 重启设备测试"/>
+        android:text="使用须知：\n1. 基于Linux内核搭建，采用四大核心应用组件（Activity、Service、BroadcastReceiver、ContentProvider），所有应用运行在独立安全沙箱中，保障系统隔离性。\n2. 提供Android Studio作为官方IDE，配套Jetpack、Compose等开发库，支持全类型设备（手机、Wear OS、车机、XR设备等）的应用开发，同时提供完整的API参考文档\n3. 覆盖各版本专属能力，比如Android 8.1新增面向低内存设备的Android Go优化方案、Android 9推出全局暗黑模式和分区权限管控机制，同时配套完整的OTA系统更新规范。\n4. 针对系统设置界面、交互逻辑制定了统一设计指南，明确设置项排布、命名规则等标准，保障全系列安卓设备的交互体验一致性。\n5. 明确应用权限申请规则、系统虚拟化安全运行机制，同时提供Google Play服务的接入适配指南，保障应用在不同设备上的兼容性‌
+"/>
 </LinearLayout>
