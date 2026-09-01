@@ -1,128 +1,75 @@
 package com.example.proxyrouteguard
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
-import android.os.IBinder
-import android.util.Log
-import androidx.core.app.NotificationCompat
-import kotlinx.coroutines.*
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 
-class RouteGuardService : Service() {
-    private val TAG = "RouteGuardService"
-    private var guardLoopJob: Job? = null
+class MainActivity : AppCompatActivity() {
 
-    private val tun = "tun0"
-    private val dev = "wlan0"
-    private val intervalMs = 3000L
-    private val pref = 18000
-    private val prefMinus1 = pref - 1
-    private val containRule = "from all iif $dev lookup $tun"
-    private val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+    private lateinit var tvStatus: TextView
+    private lateinit var btnStart: Button
+    private lateinit var btnStop: Button
 
-    companion object {
-        const val ACTION_SERVICE_STATUS = "com.example.proxyrouteguard.SERVICE_STATUS"
-        const val EXTRA_RUNNING = "extra_running"
-        var isRunning = false
-    }
-
-    override fun onCreate() {
-        super.onCreate()
-        createNotificationChannel()
-        val notification: Notification = NotificationCompat.Builder(this, "ROUTE_GUARD_CHANNEL")
-            .setContentTitle(getString(R.string.notify_title))
-            .setContentText(getString(R.string.notify_content))
-            .setSmallIcon(android.R.drawable.ic_menu_info_details)
-            .build()
-        startForeground(1001, notification)
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (!isRunning) {
-            startGuardLoop()
-        }
-        return START_STICKY
-    }
-
-    private fun startGuardLoop() {
-        isRunning = true
-        sendStatusBroadcast(true)
-        guardLoopJob?.cancel()
-        guardLoopJob = CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
-            initNetworkRules()
-            while (isActive) {
-                val ipRuleResult = RootCmd.exec("ip rule")
-                val ipRuleOutput = ipRuleResult.stdout
-
-                if (!ipRuleOutput.contains(containRule)) {
-                    val ipAddrResult = RootCmd.exec("ip ad")
-                    val ipAddrOutput = ipAddrResult.stdout
-
-                    if (!ipAddrOutput.contains(dev) || !ipAddrOutput.contains("state UP")) {
-                        val timeStr = sdf.format(Date())
-                        Log.i(TAG, "[$timeStr] dev has been lost.")
-                    } else {
-                        RootCmd.exec("ip rule add from all iif $dev table $tun pref $prefMinus1")
-                        val timeStr = sdf.format(Date())
-                        Log.i(TAG, "[$timeStr] network changed, reset the routing policy.")
-                    }
-                }
-                delay(intervalMs)
+    private val statusReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == RouteGuardService.ACTION_SERVICE_STATUS) {
+                val running = intent.getBooleanExtra(RouteGuardService.EXTRA_RUNNING, false)
+                updateUi(running)
             }
         }
     }
 
-    private fun initNetworkRules() {
-        Log.i(TAG, "initNetworkRules start")
-        RootCmd.exec("sysctl -w net.ipv4.ip_forward=1")
-        RootCmd.exec("iptables -F FORWARD")
-        RootCmd.exec("iptables -t nat -A POSTROUTING -o $tun -j MASQUERADE")
-        RootCmd.exec("ip rule add from all table main pref $pref")
-        RootCmd.exec("ip rule add from all iif $dev table $tun pref $prefMinus1")
-        Log.i(TAG, "initNetworkRules done")
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        tvStatus = findViewById(R.id.tv_status)
+        btnStart = findViewById(R.id.btn_start)
+        btnStop = findViewById(R.id.btn_stop)
+
+        registerReceiver(statusReceiver, IntentFilter(RouteGuardService.ACTION_SERVICE_STATUS),
+            RECEIVER_NOT_EXPORTED)
+
+        btnStart.setOnClickListener {
+            val serviceIntent = Intent(this, RouteGuardService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent)
+            } else {
+                startService(serviceIntent)
+            }
+            Toast.makeText(this,"已发送守护启动请求",Toast.LENGTH_SHORT).show()
+        }
+
+        btnStop.setOnClickListener {
+            val serviceIntent = Intent(this, RouteGuardService::class.java)
+            stopService(serviceIntent)
+            Toast.makeText(this,"已发送守护停止请求",Toast.LENGTH_SHORT).show()
+        }
+
+        updateUi(RouteGuardService.isRunning)
     }
 
-    private fun cleanNetworkRules() {
-        Log.i(TAG, "cleanNetworkRules start")
-        RootCmd.exec("ip rule del pref $prefMinus1")
-        RootCmd.exec("ip rule del pref $pref")
-        RootCmd.exec("iptables -t nat -D POSTROUTING -o $tun -j MASQUERADE")
-        Log.i(TAG, "cleanNetworkRules done")
-    }
-
-    private fun sendStatusBroadcast(running: Boolean) {
-        val intent = Intent(ACTION_SERVICE_STATUS)
-        intent.putExtra(EXTRA_RUNNING, running)
-        sendBroadcast(intent)
+    private fun updateUi(isRunning: Boolean) {
+        if (isRunning) {
+            tvStatus.text = "状态：守护正在运行"
+            btnStart.isEnabled = false
+            btnStop.isEnabled = true
+        } else {
+            tvStatus.text = "状态：未运行"
+            btnStart.isEnabled = true
+            btnStop.isEnabled = false
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        guardLoopJob?.cancel()
-        cleanNetworkRules()
-        isRunning = false
-        sendStatusBroadcast(false)
-        stopForeground(STOP_FOREGROUND_REMOVE)
+        unregisterReceiver(statusReceiver)
     }
-
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "ROUTE_GUARD_CHANNEL",
-                getString(R.string.channel_name),
-                NotificationManager.IMPORTANCE_LOW
-            )
-            val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            nm.createNotificationChannel(channel)
-        }
-    }
-
-    override fun onBind(intent: Intent?): IBinder? = null
 }
