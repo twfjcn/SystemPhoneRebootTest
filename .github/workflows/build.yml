@@ -17,17 +17,17 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 安装系统gradle，用来生成wrapper文件
-      - name: Install Gradle
-        run: |
-          sudo apt update
-          sudo apt install -y gradle
+      # 下载官方指定版本gradle，用来生成wrapper，版本和项目保持8.2
+      - name: Setup Gradle tool 8.2
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.2'
 
-      # 用系统gradle生成wrapper，产出 gradle-wrapper.jar + properties
-      - name: Generate Gradle Wrapper
+      # 生成wrapper，产出 gradle-wrapper.jar
+      - name: Generate gradle wrapper
         run: gradle wrapper --gradle-version 8.2
 
-      - name: Grant execute permission
+      - name: chmod +x gradlew
         run: chmod +x gradlew
 
       - name: assembleDebug
