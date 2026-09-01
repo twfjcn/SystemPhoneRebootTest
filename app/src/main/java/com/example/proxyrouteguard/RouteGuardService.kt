@@ -9,6 +9,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -35,7 +36,12 @@ class RouteGuardService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-        startForeground(1001, buildNotification())
+        val notification: Notification = NotificationCompat.Builder(this, "ROUTE_GUARD_CHANNEL")
+            .setContentTitle(getString(R.string.notify_title))
+            .setContentText(getString(R.string.notify_content))
+            .setSmallIcon(android.R.drawable.ic_menu_info_details)
+            .build()
+        startForeground(1001, notification)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -106,28 +112,11 @@ class RouteGuardService : Service() {
         stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
-    private fun buildNotification(): Notification {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Notification.Builder(this, "ROUTE_GUARD_CHANNEL")
-                .setContentTitle("路由守护运行中")
-                .setContentText("Proxy路由策略守护")
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .build()
-        } else {
-            @Suppress("DEPRECATION")
-            Notification.Builder(this)
-                .setContentTitle("路由守护运行中")
-                .setContentText("Proxy路由策略守护")
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .build()
-        }
-    }
-
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 "ROUTE_GUARD_CHANNEL",
-                "路由守护服务",
+                getString(R.string.channel_name),
                 NotificationManager.IMPORTANCE_LOW
             )
             val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
