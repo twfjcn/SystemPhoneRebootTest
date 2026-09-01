@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">SystemReboot</string>
+    <string name="app_name">ProxyRouteGuard</string>
+    <string name="service_channel_name">守护服务</string>
+    <string name="service_notify_title">路由守护运行中</string>
 </resources>
