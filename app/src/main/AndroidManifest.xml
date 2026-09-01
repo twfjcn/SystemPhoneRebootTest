@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
     <application
         android:allowBackup="true"
@@ -19,10 +19,8 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".RouteGuardService"
-            android:foregroundServiceType="systemExempted"/>
+        <service android:name=".RouteGuardService"/>
 
     </application>
-
 </manifest>
+
