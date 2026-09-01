@@ -1,8 +1,6 @@
-name: Build ProxyRouteGuard APK
+name: Build APK
 on:
   push:
-    branches: [ main ]
-  pull_request:
     branches: [ main ]
   workflow_dispatch:
 
@@ -10,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout source
         uses: actions/checkout@v4
 
       - name: Setup JDK17
@@ -19,16 +17,24 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Generate gradle wrapper
+      # 安装系统gradle，用来生成wrapper文件
+      - name: Install Gradle
         run: |
-          chmod +x gradlew
-          ./gradlew wrapper --gradle-version 8.2
+          sudo apt update
+          sudo apt install -y gradle
 
-      - name: Build Debug APK
+      # 用系统gradle生成wrapper，产出 gradle-wrapper.jar + properties
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.2
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: assembleDebug
         run: ./gradlew assembleDebug
 
-      - name: Upload Artifact APK
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ProxyRouteGuard-debug-apk
+          name: app-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
